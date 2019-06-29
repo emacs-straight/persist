@@ -77,11 +77,14 @@ DOCSTRING need to be given."
   ;; Don't support 2-arity calls either because we are lazy and
   ;; because if you want to persist it, you want to doc it.
   (declare (debug defvar) (doc-string 3))
-  (let ((form
-         `(defvar ,symbol ,initvalue ,docstring)))
-    (persist-symbol symbol initvalue)
-    (persist-load symbol)
-    form))
+  ;; Define inside progn so the byte compiler sees defvar
+  `(progn
+     (defvar ,symbol ,initvalue ,docstring)
+     ;; Access initvalue through its symbol because the defvar form
+     ;; has to stay at first level within a progn
+     (persist-symbol ',symbol (symbol-value ',symbol))
+     (persist-load ',symbol)
+     ',symbol))
 
 (defun persist-symbol (symbol &optional initvalue)
   "Make SYMBOL a persistant variable.
@@ -109,13 +112,15 @@ variables persist automatically when Emacs exits."
   (unless (persist--persistant-p symbol)
     (error (format
             "Symbol %s is not persistant" symbol)))
-  (unless (file-exists-p persist--directory-location)
-    (mkdir persist--directory-location))
-  (with-temp-buffer
-    (print (symbol-value symbol) (current-buffer))
-    (write-region (point-min) (point-max)
-                  (persist--file-location symbol)
-                  nil 'quiet)))
+  (when (not (= (symbol-value symbol)
+                (persist-default symbol)))
+    (unless (file-exists-p persist--directory-location)
+      (mkdir persist--directory-location))
+    (with-temp-buffer
+      (print (symbol-value symbol) (current-buffer))
+      (write-region (point-min) (point-max)
+                    (persist--file-location symbol)
+                    nil 'quiet))))
 
 (defun persist-default (symbol)
   "Return the default value for SYMBOL."

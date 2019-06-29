@@ -3,6 +3,7 @@
 
 
 (defmacro with-local-temp-persist (&rest body)
+  (declare (debug body))
   `(unwind-protect
        (let ((persist--directory-location "./persist/")
              (persist--symbols nil))
@@ -29,10 +30,13 @@
      (persist-symbol sym 10)
      (persist-save sym)
      (should t)
+     (should-not (file-exists-p (persist--file-location sym)))
+     (set sym 20)
+     (persist-save sym)
      (should (file-exists-p (persist--file-location sym)))
      (should
       (string-match-p
-       "10"
+       "20"
        (with-temp-buffer
          (insert-file-contents (persist--file-location sym))
          (buffer-string))))
@@ -43,7 +47,8 @@
   (with-local-temp-persist
    (let ((sym (cl-gensym)))
      (set sym 10)
-     (persist-symbol sym 10)
+     ;; set this different to force save
+     (persist-symbol sym 1)
      (persist-save sym)
      (should (equal 10 (symbol-value sym)))
      (set sym 30)

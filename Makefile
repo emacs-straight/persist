@@ -21,3 +21,6 @@ install:
 
 html:
 	texi2html persist.texi
+
+push-elpa:
+	git push elpa HEAD:externals/persist
