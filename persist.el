@@ -1,8 +1,6 @@
 ;;; persist.el --- Persist Variables -*- lexical-binding: t -*-
 
-;;; Header:
-
-;; This file is not part of Emacs
+;; Copyright (C) 2019 Free Software Foundation, Inc.
 
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
 ;; Maintainer: Phillip Lord <phillip.lord@russet.org.uk>
@@ -10,7 +8,7 @@
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
-;; Copyright (C) 2019 Free Software Foundation, Inc.
+;; This file is not part of Emacs
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
