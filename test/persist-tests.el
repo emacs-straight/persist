@@ -73,3 +73,28 @@
    (should (persist--persistant-p 'test-persist-variable))
    (should (= 20
               (persist-default 'test-persist-variable)))))
+
+(ert-deftest test-persist-location ()
+   (let ((sym (cl-gensym)))
+     (set sym 10)
+     (persist-symbol sym 10)
+     (persist-location sym "./persist-defined-location")
+     (should
+      (equal (concat "./persist-defined-location/"
+                     (symbol-name sym))
+             (persist--file-location sym)))
+     (persist-save sym)
+     (should t)
+     (should-not (file-exists-p (persist--file-location sym)))
+     (set sym 20)
+     (persist-save sym)
+     (should (file-exists-p (persist--file-location sym)))
+     (should
+      (string-match-p
+       "20"
+       (with-temp-buffer
+         (insert-file-contents (persist--file-location sym))
+         (buffer-string))))
+     (should-error
+      (persist-save 'fred))
+     (delete-directory "./persist-defined-location" t)))

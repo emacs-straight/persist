@@ -24,3 +24,6 @@ html:
 
 push-elpa:
 	git push elpa HEAD:externals/persist
+
+pull-elpa:
+	git pull elpa externals/persist

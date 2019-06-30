@@ -41,7 +41,7 @@
 
 ;;; Code:
 (defvar persist--directory-location
-  (concat user-emacs-directory "persist/")
+  (concat user-emacs-directory "persist")
   "The location of persist directory.")
 
 (defvar persist--symbols nil
@@ -56,9 +56,13 @@ variable is not set to the value.")
 
 (defun persist--file-location (symbol)
   "Return the file name at which SYMBOL does or will persist."
-  (concat persist--directory-location (symbol-name symbol)))
+  (concat
+   (or (get symbol 'persist-location)
+       persist--directory-location)
+   "/"
+   (symbol-name symbol)))
 
-(defmacro persist-defvar (symbol initvalue docstring)
+(defmacro persist-defvar (symbol initvalue docstring &optional location)
   "Define SYMBOL as a persistant variable and return SYMBOL.
 
 This form is nearly equivalent to `defvar', except that the
@@ -74,15 +78,24 @@ DOCSTRING need to be given."
 
   ;; Don't support 2-arity calls either because we are lazy and
   ;; because if you want to persist it, you want to doc it.
-  (declare (debug defvar) (doc-string 3))
+  (declare (debug (symbolp form stringp &optional form)) (doc-string 3))
   ;; Define inside progn so the byte compiler sees defvar
   `(progn
      (defvar ,symbol ,initvalue ,docstring)
      ;; Access initvalue through its symbol because the defvar form
      ;; has to stay at first level within a progn
+     (persist-location ',symbol ,location)
      (persist-symbol ',symbol (symbol-value ',symbol))
      (persist-load ',symbol)
      ',symbol))
+
+(defun persist-location (symbol directory)
+  "Set the directory for persisting the value of symbol.
+
+This does force the loading of value from this directory, so to
+persist a variable, you will normally need to call `persist-load'
+to load a previously saved location."
+  (put symbol 'persist-location directory))
 
 (defun persist-symbol (symbol &optional initvalue)
   "Make SYMBOL a persistant variable.
@@ -92,7 +105,11 @@ If non-nil, INITVALUE is the value to which SYMBOL will be set if
 current `symbol-value' of SYMBOL.
 
 INITVALUE is set for the session and will itself not persist
-across sessions."
+across sessions.
+
+This does force the loading of value from this directory, so to
+persist a variable, you will normally need to call `persist-load'
+to load a previously saved location."
   (let ((initvalue (or initvalue (symbol-value symbol))))
     (add-to-list 'persist--symbols symbol)
     (put symbol 'persist t)
@@ -112,8 +129,11 @@ variables persist automatically when Emacs exits."
             "Symbol %s is not persistant" symbol)))
   (when (not (= (symbol-value symbol)
                 (persist-default symbol)))
-    (unless (file-exists-p persist--directory-location)
-      (mkdir persist--directory-location))
+    (let ((dir-loc
+           (file-name-directory
+            (persist--file-location symbol))))
+      (unless (file-exists-p dir-loc)
+        (mkdir dir-loc)))
     (with-temp-buffer
       (print (symbol-value symbol) (current-buffer))
       (write-region (point-min) (point-max)

@@ -104,7 +104,6 @@ This function saves @code{symbol} immediately rather than waiting till
 the normal time
 @end defun
 
-
 @defun persist-default (symbol)
 Return the default value for @code{symbol}. The default value is
 actually set for each session and does not persist from session to
@@ -115,6 +114,13 @@ value across sessions.
 
 @defun persist-reset (symbol)
 Change the value of @code{symbol} to the last saved value if it exists.
+@end defun
+
+@defun persist-location (symbol directory)
+Values are usually persisted to a standard location; it is possible to
+change this for individual symbol using this function. Be aware that
+this does not call @code{persist-load}, so this will not restore a
+previously saved value.
 @end defun
 
 @node Comparison
