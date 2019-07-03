@@ -41,7 +41,7 @@
 
 ;;; Code:
 (defvar persist--directory-location
-  (concat user-emacs-directory "persist")
+  (locate-user-emacs-file "persist")
   "The location of persist directory.")
 
 (defvar persist--symbols nil
@@ -56,11 +56,17 @@ variable is not set to the value.")
 
 (defun persist--file-location (symbol)
   "Return the file name at which SYMBOL does or will persist."
-  (concat
+  (expand-file-name
+   (symbol-name symbol)
    (or (get symbol 'persist-location)
-       persist--directory-location)
-   "/"
-   (symbol-name symbol)))
+       persist--directory-location)))
+
+(defun persist--defvar-1 (symbol location)
+  "Set symbol up for persistance."
+  (when location
+    (persist-location symbol location))
+  (persist-symbol symbol (symbol-value symbol))
+  (persist-load symbol))
 
 (defmacro persist-defvar (symbol initvalue docstring &optional location)
   "Define SYMBOL as a persistant variable and return SYMBOL.
@@ -84,18 +90,16 @@ DOCSTRING need to be given."
      (defvar ,symbol ,initvalue ,docstring)
      ;; Access initvalue through its symbol because the defvar form
      ;; has to stay at first level within a progn
-     (persist-location ',symbol ,location)
-     (persist-symbol ',symbol (symbol-value ',symbol))
-     (persist-load ',symbol)
+     (persist--defvar-1 ',symbol ,location)
      ',symbol))
 
 (defun persist-location (symbol directory)
   "Set the directory for persisting the value of symbol.
 
-This does force the loading of value from this directory, so to
-persist a variable, you will normally need to call `persist-load'
-to load a previously saved location."
-  (put symbol 'persist-location directory))
+This does not force the loading of value from this directory, so
+to persist a variable, you will normally need to call
+`persist-load' to load a previously saved location."
+  (put symbol 'persist-location (expand-file-name directory)))
 
 (defun persist-symbol (symbol &optional initvalue)
   "Make SYMBOL a persistant variable.

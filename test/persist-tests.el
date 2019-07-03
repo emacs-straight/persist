@@ -80,8 +80,9 @@
      (persist-symbol sym 10)
      (persist-location sym "./persist-defined-location")
      (should
-      (equal (concat "./persist-defined-location/"
-                     (symbol-name sym))
+      (equal (expand-file-name
+              (symbol-name sym)
+              "./persist-defined-location/")
              (persist--file-location sym)))
      (persist-save sym)
      (should t)
