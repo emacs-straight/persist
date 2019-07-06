@@ -4,7 +4,8 @@
 
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
 ;; Maintainer: Phillip Lord <phillip.lord@russet.org.uk>
-;; Version: 0.2
+;; Package-Type: multi
+;; Version: 0.3
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
