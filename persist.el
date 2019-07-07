@@ -1,4 +1,4 @@
-;;; persist.el --- Persist Variables -*- lexical-binding: t -*-
+;;; persist.el --- Persist Variables between Emacs Sessions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019 Free Software Foundation, Inc.
 
