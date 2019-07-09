@@ -21,11 +21,15 @@
   ;; do not save not persist variables
   (should-error
    (with-local-temp-persist
-    (persist-save (cl-gensym)))))
+    (persist-save (cl-gensym)))
+   :type 'error
+   :exclude-subtypes t))
 
 (ert-deftest test-persist-save ()
   (with-local-temp-persist
    (let ((sym (cl-gensym)))
+     ;; precondition
+   (should-not (file-exists-p (persist--file-location sym)))
      (set sym 10)
      (persist-symbol sym 10)
      (persist-save sym)
@@ -42,6 +46,27 @@
          (buffer-string))))
      (should-error
       (persist-save 'fred)))))
+
+(ert-deftest test-persist-save-non-number ()
+  "Test saving something that is not a number.
+
+`test-persist-save' missed "
+  (with-local-temp-persist
+   (let ((sym (cl-gensym)))
+     (set sym "fred")
+     (persist-symbol sym "fred")
+     (persist-save sym)
+     (should t)
+     (should-not (file-exists-p (persist--file-location sym)))
+     (set sym "george")
+     (persist-save sym)
+     (should (file-exists-p (persist--file-location sym)))
+     (should
+      (string-match-p
+       "george"
+       (with-temp-buffer
+         (insert-file-contents (persist--file-location sym))
+         (buffer-string)))))))
 
 (ert-deftest test-persist-load ()
   (with-local-temp-persist
@@ -75,27 +100,28 @@
               (persist-default 'test-persist-variable)))))
 
 (ert-deftest test-persist-location ()
-   (let ((sym (cl-gensym)))
-     (set sym 10)
-     (persist-symbol sym 10)
-     (persist-location sym "./persist-defined-location")
-     (should
-      (equal (expand-file-name
-              (symbol-name sym)
-              "./persist-defined-location/")
-             (persist--file-location sym)))
-     (persist-save sym)
-     (should t)
-     (should-not (file-exists-p (persist--file-location sym)))
-     (set sym 20)
-     (persist-save sym)
-     (should (file-exists-p (persist--file-location sym)))
-     (should
-      (string-match-p
-       "20"
-       (with-temp-buffer
-         (insert-file-contents (persist--file-location sym))
-         (buffer-string))))
-     (should-error
-      (persist-save 'fred))
-     (delete-directory "./persist-defined-location" t)))
+  (unwind-protect
+      (let ((sym (cl-gensym)))
+        (delete-directory "./persist-defined-location" t)
+        (set sym 10)
+        (persist-symbol sym 10)
+        (persist-location sym "./persist-defined-location")
+        (should
+         (equal (expand-file-name
+                 (symbol-name sym)
+                 "./persist-defined-location/")
+                (persist--file-location sym)))
+        (persist-save sym)
+        (should-not (file-exists-p (persist--file-location sym)))
+        (set sym 20)
+        (persist-save sym)
+        (should (file-exists-p (persist--file-location sym)))
+        (should
+         (string-match-p
+          "20"
+          (with-temp-buffer
+            (insert-file-contents (persist--file-location sym))
+            (buffer-string))))
+        (should-error
+         (persist-save 'fred)))
+    (delete-directory "./persist-defined-location" t)))

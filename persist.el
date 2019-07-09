@@ -5,7 +5,7 @@
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
 ;; Maintainer: Phillip Lord <phillip.lord@russet.org.uk>
 ;; Package-Type: multi
-;; Version: 0.3
+;; Version: 0.4
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
@@ -132,8 +132,8 @@ variables persist automatically when Emacs exits."
   (unless (persist--persistant-p symbol)
     (error (format
             "Symbol %s is not persistant" symbol)))
-  (when (not (= (symbol-value symbol)
-                (persist-default symbol)))
+  (unless (equal (symbol-value symbol)
+                 (persist-default symbol))
     (let ((dir-loc
            (file-name-directory
             (persist--file-location symbol))))
