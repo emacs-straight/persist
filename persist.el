@@ -140,7 +140,13 @@ variables persist automatically when Emacs exits."
       (unless (file-exists-p dir-loc)
         (mkdir dir-loc)))
     (with-temp-buffer
-      (print (symbol-value symbol) (current-buffer))
+      (let (print-level
+	    print-length
+            print-quoted
+            (print-escape-control-characters t)
+            (print-escape-nonascii t)
+            (print-circle t))
+	(print (symbol-value symbol) (current-buffer)))
       (write-region (point-min) (point-max)
                     (persist--file-location symbol)
                     nil 'quiet))))
