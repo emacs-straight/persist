@@ -44,6 +44,9 @@
        (with-temp-buffer
          (insert-file-contents (persist--file-location sym))
          (buffer-string))))
+     (set sym 10)
+     (persist-save sym)
+     (should-not (file-exists-p (persist--file-location sym)))
      (should-error
       (persist-save 'fred)))))
 

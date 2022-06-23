@@ -132,24 +132,26 @@ variables persist automatically when Emacs exits."
   (unless (persist--persistant-p symbol)
     (error (format
             "Symbol %s is not persistant" symbol)))
-  (unless (equal (symbol-value symbol)
-                 (persist-default symbol))
-    (let ((dir-loc
-           (file-name-directory
-            (persist--file-location symbol))))
-      (unless (file-exists-p dir-loc)
-        (mkdir dir-loc)))
-    (with-temp-buffer
-      (let (print-level
-	    print-length
-            print-quoted
-            (print-escape-control-characters t)
-            (print-escape-nonascii t)
-            (print-circle t))
-	(print (symbol-value symbol) (current-buffer)))
-      (write-region (point-min) (point-max)
-                    (persist--file-location symbol)
-                    nil 'quiet))))
+  (let ((symbol-file-loc (persist--file-location symbol)))
+    (if (equal (symbol-value symbol)
+               (persist-default symbol))
+        (when (file-exists-p symbol-file-loc)
+          (delete-file symbol-file-loc))
+      (let ((dir-loc
+             (file-name-directory symbol-file-loc)))
+        (unless (file-exists-p dir-loc)
+          (mkdir dir-loc))
+        (with-temp-buffer
+          (let (print-level
+                print-length
+                print-quoted
+                (print-escape-control-characters t)
+                (print-escape-nonascii t)
+                (print-circle t))
+            (print (symbol-value symbol) (current-buffer)))
+          (write-region (point-min) (point-max)
+                        symbol-file-loc
+                        nil 'quiet))))))
 
 (defun persist-default (symbol)
   "Return the default value for SYMBOL."
