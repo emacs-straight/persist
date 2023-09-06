@@ -1,4 +1,9 @@
+*.elc
 /.cask
 /makefile-local
 /persist.html
 /dist/
+
+# ELPA-generated files
+/persist-autoloads.el
+/persist-pkg.el
