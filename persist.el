@@ -3,9 +3,9 @@
 ;; Copyright (C) 2019 Free Software Foundation, Inc.
 
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
-;; Maintainer: Phillip Lord <phillip.lord@russet.org.uk>
+;; Maintainer: Joseph Turner <persist-el@breatheoutbreathe.in>
 ;; Package-Type: multi
-;; Version: 0.5
+;; Version: 0.6
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
@@ -22,7 +22,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -195,7 +195,7 @@ This does not remove any saved value of SYMBOL."
 (defun persist-equal (a b)
   "Return non-nil when the values of A and B are equal.
 A and B are compared using `equal' unless they are both hash
-tables. In that case, the following are compared:
+tables.  In that case, the following are compared:
 
 - hash table count
 - hash table predicate
